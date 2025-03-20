@@ -13,52 +13,78 @@ import {
 	fontColors,
 	backgroundColors,
 	contentWidthArr,
+	defaultArticleState,
 } from 'src/constants/articleProps';
 import { useClose } from './hook/useClose';
 import clsx from 'clsx';
-
 import styles from './ArticleParamsForm.module.scss';
 
 type ArticleParamsFormProps = {
-	fontFamily: (select: OptionType) => void;
-	fontSize: (select: OptionType) => void;
-	fontColor: (select: OptionType) => void;
-	backgroundColor: (select: OptionType) => void;
-	contentWidth: (select: OptionType) => void;
-	resetButton: () => void;
-	applyButton: (event: FormEvent) => void;
-	sideBarState: ArticleStateType;
+	articleState: ArticleStateType;
+	setArticleState: (props: ArticleStateType) => void;
 };
 
 export const ArticleParamsForm = ({
-	fontFamily,
-	fontSize,
-	fontColor,
-	backgroundColor,
-	contentWidth,
-	resetButton,
-	applyButton,
-	sideBarState,
+	articleState,
+	setArticleState,
 }: ArticleParamsFormProps) => {
-	const ref = useRef<HTMLFormElement | null>(null);
-	const [open, setOpen] = useState(false);
+	const formRef = useRef<HTMLFormElement | null>(null);
+	const [isFormOpen, setIsFormOpen] = useState(false);
+
+	const [sideBarState, setSideBarState] =
+		useState<ArticleStateType>(articleState);
+
+	const changeFontFamily = (select: OptionType) => {
+		setSideBarState({ ...sideBarState, fontFamilyOption: select });
+	};
+
+	const changeFontSize = (select: OptionType) => {
+		setSideBarState({ ...sideBarState, fontSizeOption: select });
+	};
+
+	const changeFontColor = (select: OptionType) => {
+		setSideBarState({ ...sideBarState, fontColor: select });
+	};
+
+	const changeContainerWidth = (select: OptionType) => {
+		setSideBarState({ ...sideBarState, contentWidth: select });
+	};
+
+	const changeBgColor = (select: OptionType) => {
+		setSideBarState({ ...sideBarState, backgroundColor: select });
+	};
+
+	const resetSidebarState = () => {
+		setArticleState(defaultArticleState);
+		setSideBarState(defaultArticleState);
+	};
+
+	const applySideBarState = (event: FormEvent) => {
+		event.preventDefault();
+		setArticleState(sideBarState);
+	};
 
 	useClose({
-		isOpen: open,
-		onClose: () => setOpen(false),
-		rootRef: ref,
+		isOpen: isFormOpen,
+		onClose: () => setIsFormOpen(false),
+		rootRef: formRef,
 	});
 
-	const toggleForm = useCallback(() => {
-		setOpen((prevOpen) => !prevOpen);
+	const toggleArticleParamsForm = useCallback(() => {
+		setIsFormOpen((prevIsFormOpen) => !prevIsFormOpen);
 	}, []);
 
 	return (
 		<>
-			<ArrowButton isOpen={open} onClick={toggleForm} />
+			<ArrowButton isOpen={isFormOpen} onClick={toggleArticleParamsForm} />
 			<aside
-				className={clsx(styles.container, { [styles.container_open]: open })}>
-				<form className={styles.form} ref={ref} onSubmit={applyButton}>
+				className={clsx(styles.container, {
+					[styles.container_open]: isFormOpen,
+				})}>
+				<form
+					className={styles.form}
+					ref={formRef}
+					onSubmit={applySideBarState}>
 					<Text size={31} weight={800} uppercase as={'h3'} align='center'>
 						Задайте параметры
 					</Text>
@@ -66,7 +92,7 @@ export const ArticleParamsForm = ({
 					<Select
 						selected={sideBarState.fontFamilyOption}
 						options={fontFamilyOptions}
-						onChange={fontFamily}
+						onChange={changeFontFamily}
 						title='Шрифт'
 					/>
 					<span className={styles.span} />
@@ -74,14 +100,14 @@ export const ArticleParamsForm = ({
 						name='fontSize'
 						options={fontSizeOptions}
 						selected={sideBarState.fontSizeOption}
-						onChange={fontSize}
+						onChange={changeFontSize}
 						title='Размер'
 					/>
 					<span className={styles.span} />
 					<Select
 						selected={sideBarState.fontColor}
 						options={fontColors}
-						onChange={fontColor}
+						onChange={changeFontColor}
 						title='Цвет шрифта'
 					/>
 					<span className={styles.span} />
@@ -90,14 +116,14 @@ export const ArticleParamsForm = ({
 					<Select
 						selected={sideBarState.backgroundColor}
 						options={backgroundColors}
-						onChange={backgroundColor}
+						onChange={changeBgColor}
 						title='Цвет фона'
 					/>
 					<span className={styles.span} />
 					<Select
 						selected={sideBarState.contentWidth}
 						options={contentWidthArr}
-						onChange={contentWidth}
+						onChange={changeContainerWidth}
 						title='Ширина контента'
 					/>
 					<span className={styles.span} />
@@ -106,7 +132,7 @@ export const ArticleParamsForm = ({
 							title='Сбросить'
 							htmlType='reset'
 							type='clear'
-							onClick={resetButton}
+							onClick={resetSidebarState}
 						/>
 						<Button title='Применить' htmlType='submit' type='apply' />
 					</div>
